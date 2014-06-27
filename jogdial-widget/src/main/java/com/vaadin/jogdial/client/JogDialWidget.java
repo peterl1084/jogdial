@@ -12,36 +12,32 @@ import com.google.gwt.event.dom.client.HasMouseUpHandlers;
 import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.event.dom.client.MouseMoveHandler;
 import com.google.gwt.event.dom.client.MouseUpHandler;
-import com.google.gwt.event.dom.client.TouchCancelEvent;
 import com.google.gwt.event.dom.client.TouchCancelHandler;
-import com.google.gwt.event.dom.client.TouchEndEvent;
 import com.google.gwt.event.dom.client.TouchEndHandler;
-import com.google.gwt.event.dom.client.TouchMoveEvent;
 import com.google.gwt.event.dom.client.TouchMoveHandler;
-import com.google.gwt.event.dom.client.TouchStartEvent;
 import com.google.gwt.event.dom.client.TouchStartHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.SimplePanel;
+import com.google.gwt.user.client.ui.FocusPanel;
 
 public class JogDialWidget extends Composite implements HasAllTouchHandlers,
 		HasClickHandlers, HasMouseMoveHandlers, HasMouseDownHandlers,
 		HasMouseUpHandlers {
 	private DrawingArea drawingArea;
 
-	private Circle cap;
+	private Cap cap;
 
-	private SimplePanel panel;
+	private FocusPanel panel;
 
 	public JogDialWidget() {
-		panel = new SimplePanel();
+		panel = new FocusPanel();
 		panel.setStyleName("v-analog-panel");
 
 		drawingArea = new DrawingArea(0, 0);
 		drawingArea.setStyleName("v-analog-drawingarea");
 		panel.setWidget(drawingArea);
 
-		cap = new Circle(0, 0, 20);
+		cap = new Cap(0, 0, 20);
 		cap.setFillColor("#6600ff");
 		cap.setStrokeColor("#000066");
 		cap.setStrokeWidth(2);
@@ -80,41 +76,41 @@ public class JogDialWidget extends Composite implements HasAllTouchHandlers,
 
 	@Override
 	public HandlerRegistration addTouchStartHandler(TouchStartHandler handler) {
-		return panel.addDomHandler(handler, TouchStartEvent.getType());
+		return panel.addTouchStartHandler(handler);
 	}
 
 	@Override
 	public HandlerRegistration addTouchMoveHandler(TouchMoveHandler handler) {
-		return panel.addDomHandler(handler, TouchMoveEvent.getType());
+		return panel.addTouchMoveHandler(handler);
 	}
 
 	@Override
 	public HandlerRegistration addTouchEndHandler(TouchEndHandler handler) {
-		return panel.addDomHandler(handler, TouchEndEvent.getType());
+		return panel.addTouchEndHandler(handler);
 	}
 
 	@Override
 	public HandlerRegistration addTouchCancelHandler(TouchCancelHandler handler) {
-		return panel.addDomHandler(handler, TouchCancelEvent.getType());
+		return panel.addTouchCancelHandler(handler);
 	}
 
 	@Override
 	public HandlerRegistration addClickHandler(ClickHandler handler) {
-		return drawingArea.addClickHandler(handler);
+		return panel.addClickHandler(handler);
 	}
 
 	@Override
 	public HandlerRegistration addMouseMoveHandler(MouseMoveHandler handler) {
-		return drawingArea.addMouseMoveHandler(handler);
+		return panel.addMouseMoveHandler(handler);
 	}
 
 	@Override
 	public HandlerRegistration addMouseUpHandler(MouseUpHandler handler) {
-		return drawingArea.addMouseUpHandler(handler);
+		return panel.addMouseUpHandler(handler);
 	}
 
 	@Override
 	public HandlerRegistration addMouseDownHandler(MouseDownHandler handler) {
-		return drawingArea.addMouseDownHandler(handler);
+		return panel.addMouseDownHandler(handler);
 	}
 }

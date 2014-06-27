@@ -1,5 +1,7 @@
 package com.vaadin.jogdial.client;
 
+import java.util.logging.Logger;
+
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Touch;
 import com.google.gwt.event.dom.client.MouseDownEvent;
@@ -26,22 +28,26 @@ public class JogdialConnector extends AbstractComponentConnector implements
 		MouseMoveHandler, MouseDownHandler, MouseUpHandler {
 	private static final long serialVersionUID = -4509343276799655227L;
 
-	private JogDialServerRpc serverRPC = RpcProxy.create(JogDialServerRpc.class,
-			this);
+	private JogDialServerRpc serverRPC = RpcProxy.create(
+			JogDialServerRpc.class, this);
 
 	private boolean mouseDown;
 
 	private Point centerPoint;
 	private Point previousPoint;
 
+	private static final Logger logger = Logger
+			.getLogger(JogdialConnector.class.getSimpleName());
+
 	@Override
 	protected void init() {
 		super.init();
 
 		getLayoutManager().registerDependency(this, getWidget().getElement());
-		getWidget().addMouseDownHandler(this);
-		getWidget().addMouseUpHandler(this);
-		getWidget().addMouseMoveHandler(this);
+		// getWidget().addMouseDownHandler(this);
+		// getWidget().addMouseUpHandler(this);
+		// getWidget().addMouseMoveHandler(this);
+
 		getWidget().addTouchMoveHandler(this);
 		getWidget().addTouchStartHandler(this);
 
@@ -83,11 +89,18 @@ public class JogdialConnector extends AbstractComponentConnector implements
 
 	@Override
 	public void onTouchMove(TouchMoveEvent event) {
-		Touch touch = event.getTouches().get(0);
+		getLogger().info(
+				getConnectorId() + " got " + event.getTouches().length()
+						+ " touches and " + event.getTargetTouches().length()
+						+ " targeted touches");
+
+		Touch touch = event.getTargetTouches().get(0);
 		int relativeX = touch.getRelativeX(getWidget().getElement());
 		int relativeY = touch.getRelativeY(getWidget().getElement());
 
 		updateCapPosition(new Point(relativeX, relativeY));
+
+		event.getNativeEvent().preventDefault();
 	}
 
 	@Override
@@ -163,10 +176,14 @@ public class JogdialConnector extends AbstractComponentConnector implements
 
 	@Override
 	public void onTouchStart(TouchStartEvent event) {
-		Touch touch = event.getTouches().get(0);
+		Touch touch = event.getTargetTouches().get(0);
 		int relativeX = touch.getRelativeX(getWidget().getElement());
 		int relativeY = touch.getRelativeY(getWidget().getElement());
 
 		updateCapPosition(new Point(relativeX, relativeY));
+	}
+
+	private Logger getLogger() {
+		return logger;
 	}
 }

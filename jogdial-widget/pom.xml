@@ -8,8 +8,6 @@
 	</parent>
 	<artifactId>jogdial-widget</artifactId>
 
-	
-
 	<dependencies>
 		<dependency>
 			<groupId>com.vaadin</groupId>
@@ -26,11 +24,6 @@
 		<dependency>
 			<groupId>org.vaadin.addons</groupId>
 			<artifactId>gwt-graphics</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.vaadin</groupId>
-			<artifactId>vaadin-client-compiler</artifactId>
-			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 
@@ -80,6 +73,19 @@
 				</executions>
 			</plugin>
 			
+			<plugin>
+				<groupId>com.vaadin</groupId>
+				<artifactId>vaadin-maven-plugin</artifactId>
+				<version>${vaadin.version}</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>resources</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
 		</plugins>
 	</build>
 
