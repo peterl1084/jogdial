@@ -10,6 +10,8 @@ import com.google.gwt.event.dom.client.MouseMoveEvent;
 import com.google.gwt.event.dom.client.MouseMoveHandler;
 import com.google.gwt.event.dom.client.MouseUpEvent;
 import com.google.gwt.event.dom.client.MouseUpHandler;
+import com.google.gwt.event.dom.client.TouchEndEvent;
+import com.google.gwt.event.dom.client.TouchEndHandler;
 import com.google.gwt.event.dom.client.TouchMoveEvent;
 import com.google.gwt.event.dom.client.TouchMoveHandler;
 import com.google.gwt.event.dom.client.TouchStartEvent;
@@ -25,7 +27,7 @@ import com.vaadin.shared.ui.Connect;
 @Connect(JogDial.class)
 public class JogdialConnector extends AbstractComponentConnector implements
 		SimpleManagedLayout, TouchMoveHandler, TouchStartHandler,
-		MouseMoveHandler, MouseDownHandler, MouseUpHandler {
+		TouchEndHandler, MouseMoveHandler, MouseDownHandler, MouseUpHandler {
 	private static final long serialVersionUID = -4509343276799655227L;
 
 	private JogDialServerRpc serverRPC = RpcProxy.create(
@@ -50,6 +52,7 @@ public class JogdialConnector extends AbstractComponentConnector implements
 
 		getWidget().addTouchMoveHandler(this);
 		getWidget().addTouchStartHandler(this);
+		getWidget().addTouchEndHandler(this);
 
 		centerPoint = new Point(0, 0);
 	}
@@ -185,5 +188,10 @@ public class JogdialConnector extends AbstractComponentConnector implements
 
 	private Logger getLogger() {
 		return logger;
+	}
+
+	@Override
+	public void onTouchEnd(TouchEndEvent event) {
+		setCapToCenter();
 	}
 }
