@@ -3,6 +3,7 @@ package com.vaadin.jogdial;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 
+import com.vaadin.jogdial.client.JogDialClientRpc;
 import com.vaadin.jogdial.client.JogDialServerRpc;
 import com.vaadin.jogdial.client.JogDialState;
 import com.vaadin.jogdial.client.Position;
@@ -17,17 +18,22 @@ public class JogDial extends com.vaadin.ui.AbstractComponent {
 
 		@Override
 		public void positionMoved(float x, float y) {
-			fireEvent(new AxisMoveEvent(JogDial.this, x, y));
+			fireEvent(new AxesMoveEvent(JogDial.this, x, y));
 		}
 	};
 
-	public JogDial(Position position) {
-		setWidth(250, Unit.PIXELS);
-		setHeight(250, Unit.PIXELS);
+	private JogDialClientRpc clientRPC;
+
+	public JogDial(Position position, int radius) {
+		clientRPC = getRpcProxy(JogDialClientRpc.class);
 
 		registerRpc(rpc);
 
 		getState().position = position;
+		getState().radius = radius;
+
+		setWidth(radius * 2, Unit.PIXELS);
+		setHeight(radius * 2, Unit.PIXELS);
 	}
 
 	@Override
@@ -41,9 +47,9 @@ public class JogDial extends com.vaadin.ui.AbstractComponent {
 	 * 
 	 * @param listener
 	 */
-	public void addAxisMoveListener(AxisMoveListener listener) {
-		addListener(AxisMoveEvent.class, listener,
-				AxisMoveListener.AXIS_MOVE_METHOD);
+	public void addAxesMoveListener(AxesMoveListener listener) {
+		addListener(AxesMoveEvent.class, listener,
+				AxesMoveListener.AXES_MOVE_METHOD);
 	}
 
 	/**
@@ -51,24 +57,24 @@ public class JogDial extends com.vaadin.ui.AbstractComponent {
 	 * 
 	 * @param listener
 	 */
-	public void removeAxisMoveListener(AxisMoveListener listener) {
-		removeListener(AxisMoveEvent.class, listener,
-				AxisMoveListener.AXIS_MOVE_METHOD);
+	public void removeAxisMoveListener(AxesMoveListener listener) {
+		removeListener(AxesMoveEvent.class, listener,
+				AxesMoveListener.AXES_MOVE_METHOD);
 	}
 
-	public interface AxisMoveListener extends Serializable {
-		public void onAxisMoved(AxisMoveEvent event);
+	public interface AxesMoveListener extends Serializable {
+		public void onAxesMoved(AxesMoveEvent event);
 
-		public static final Method AXIS_MOVE_METHOD = ReflectTools.findMethod(
-				AxisMoveListener.class, "onAxisMoved", AxisMoveEvent.class);
+		public static final Method AXES_MOVE_METHOD = ReflectTools.findMethod(
+				AxesMoveListener.class, "onAxesMoved", AxesMoveEvent.class);
 	}
 
-	public class AxisMoveEvent extends Component.Event {
+	public class AxesMoveEvent extends Component.Event {
 		private static final long serialVersionUID = 684896302630632837L;
 		private final float x;
 		private final float y;
 
-		public AxisMoveEvent(Component source, float x, float y) {
+		public AxesMoveEvent(Component source, float x, float y) {
 			super(source);
 			this.x = x;
 			this.y = y;
@@ -81,5 +87,29 @@ public class JogDial extends com.vaadin.ui.AbstractComponent {
 		public float getY() {
 			return y;
 		}
+	}
+
+	public void addUpShortcutKey(int key, int... modifiers) {
+		addShortcutListener(new JogDialShortcutListener(this, key, 0, -1,
+				modifiers));
+	}
+
+	public void addDownShortcutKey(int key, int... modifiers) {
+		addShortcutListener(new JogDialShortcutListener(this, key, 0, 1,
+				modifiers));
+	}
+
+	public void addLeftShortcutKey(int key, int... modifiers) {
+		addShortcutListener(new JogDialShortcutListener(this, key, -1, 0,
+				modifiers));
+	}
+
+	public void addRightShortcutKey(int key, int... modifiers) {
+		addShortcutListener(new JogDialShortcutListener(this, key, 1, 0,
+				modifiers));
+	}
+
+	public void setCapPosition(float x, float y) {
+		clientRPC.moveCapTo(x, y);
 	}
 }

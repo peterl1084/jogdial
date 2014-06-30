@@ -3,8 +3,9 @@ package com.vaadin.jogdial;
 import javax.servlet.annotation.WebServlet;
 
 import com.vaadin.annotations.VaadinServletConfiguration;
-import com.vaadin.jogdial.JogDial.AxisMoveEvent;
-import com.vaadin.jogdial.JogDial.AxisMoveListener;
+import com.vaadin.event.ShortcutAction.KeyCode;
+import com.vaadin.jogdial.JogDial.AxesMoveEvent;
+import com.vaadin.jogdial.JogDial.AxesMoveListener;
 import com.vaadin.jogdial.client.Position;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinServlet;
@@ -25,32 +26,37 @@ public class JogDialUI extends UI {
 		HorizontalLayout layout = new HorizontalLayout();
 		layout.setSizeFull();
 
-		JogDial rotationalAnalog = new JogDial(Position.LEFT);
-		rotationalAnalog.addAxisMoveListener(new AxisMoveListener() {
+		JogDial rotationDial = new JogDial(Position.LEFT, 200);
+		rotationDial.addAxesMoveListener(new AxesMoveListener() {
 
 			@Override
-			public void onAxisMoved(AxisMoveEvent event) {
+			public void onAxesMoved(AxesMoveEvent event) {
 				System.out.println("Rotational " + event.getX() + ","
 						+ event.getY());
 			}
 		});
 
-		JogDial movementAnalog = new JogDial(Position.RIGHT);
-		movementAnalog.addAxisMoveListener(new AxisMoveListener() {
+		JogDial movementDial = new JogDial(Position.RIGHT, 300);
+		movementDial.addAxesMoveListener(new AxesMoveListener() {
 
 			@Override
-			public void onAxisMoved(AxisMoveEvent event) {
+			public void onAxesMoved(AxesMoveEvent event) {
 				System.out.println("Movement " + event.getX() + ","
 						+ event.getY());
 			}
 		});
 
-		layout.addComponent(rotationalAnalog);
-		layout.addComponent(movementAnalog);
+		movementDial.addUpShortcutKey(KeyCode.ARROW_UP);
+		movementDial.addDownShortcutKey(KeyCode.ARROW_DOWN);
+		movementDial.addLeftShortcutKey(KeyCode.ARROW_LEFT);
+		movementDial.addRightShortcutKey(KeyCode.ARROW_RIGHT);
 
-		layout.setExpandRatio(movementAnalog, 1);
-		layout.setComponentAlignment(rotationalAnalog, Alignment.BOTTOM_LEFT);
-		layout.setComponentAlignment(movementAnalog, Alignment.BOTTOM_RIGHT);
+		layout.addComponent(rotationDial);
+		layout.addComponent(movementDial);
+
+		layout.setExpandRatio(movementDial, 1);
+		layout.setComponentAlignment(rotationDial, Alignment.BOTTOM_LEFT);
+		layout.setComponentAlignment(movementDial, Alignment.BOTTOM_RIGHT);
 
 		setContent(layout);
 	}

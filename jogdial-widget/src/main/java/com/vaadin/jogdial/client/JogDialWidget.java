@@ -45,18 +45,13 @@ public class JogDialWidget extends Composite implements HasAllTouchHandlers,
 		initWidget(panel);
 	}
 
-	private void drawBackground() {
+	private void drawBackground(int radius) {
 		drawingArea.clear();
 
-		int centerX = (drawingArea.getWidth() / 2);
-		int centerY = (drawingArea.getHeight() / 2);
-
-		Circle circle = new Circle(centerX, centerY, (centerX - 4));
+		Circle circle = new Circle(radius, radius, radius - 2);
 		circle.setFillColor("#3b3b3b");
 		circle.setStrokeColor("#2f2f2f");
 		circle.setStrokeWidth(2);
-
-		drawCap(new Point(centerX, centerY));
 
 		drawingArea.add(circle);
 		drawingArea.add(cap);
@@ -67,11 +62,11 @@ public class JogDialWidget extends Composite implements HasAllTouchHandlers,
 		cap.setY(position.getY());
 	}
 
-	public void adjustSize(int outerWidth, int outerHeight) {
-		drawingArea.setWidth(outerWidth);
-		drawingArea.setHeight(outerHeight);
+	public void adjustSize(int radius) {
+		drawingArea.setWidth(radius * 2);
+		drawingArea.setHeight(radius * 2);
 
-		drawBackground();
+		drawBackground(radius);
 	}
 
 	@Override

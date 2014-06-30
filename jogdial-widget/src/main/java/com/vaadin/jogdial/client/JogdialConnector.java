@@ -1,15 +1,7 @@
 package com.vaadin.jogdial.client;
 
-import java.util.logging.Logger;
-
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Touch;
-import com.google.gwt.event.dom.client.MouseDownEvent;
-import com.google.gwt.event.dom.client.MouseDownHandler;
-import com.google.gwt.event.dom.client.MouseMoveEvent;
-import com.google.gwt.event.dom.client.MouseMoveHandler;
-import com.google.gwt.event.dom.client.MouseUpEvent;
-import com.google.gwt.event.dom.client.MouseUpHandler;
 import com.google.gwt.event.dom.client.TouchEndEvent;
 import com.google.gwt.event.dom.client.TouchEndHandler;
 import com.google.gwt.event.dom.client.TouchMoveEvent;
@@ -29,39 +21,37 @@ import com.vaadin.shared.ui.Connect;
 @Connect(JogDial.class)
 public class JogdialConnector extends AbstractComponentConnector implements
 		SimpleManagedLayout, TouchMoveHandler, TouchStartHandler,
-		TouchEndHandler, MouseMoveHandler, MouseDownHandler, MouseUpHandler,
-		GamepadObserver {
+		TouchEndHandler, GamepadObserver {
 	private static final long serialVersionUID = -4509343276799655227L;
 
-	private JogDialServerRpc serverRPC = RpcProxy.create(
-			JogDialServerRpc.class, this);
-
-	private boolean mouseDown;
+	private static final float MOVEMENT_THRESHOLD = 0.05f;
 
 	private Point centerPoint;
 	private Point previousPoint;
 
+	private Position position = Position.LEFT;
+
+	private int radius;
+
 	private GamePadSupport support = new GamePadSupport();
 
-	private GamePad latestGamepadStatus;
-
 	private JogDialClientRpc clientRpc = new JogDialClientRpc() {
+		private static final long serialVersionUID = 2363280604346399389L;
 
 		@Override
 		public void moveCapTo(float x, float y) {
-			JogdialConnector.this.setCapTo(x, y);
+			setCapPosition(x, y, false);
 		}
 	};
 
-	private Position position = Position.LEFT;
-
-	private static final Logger logger = Logger
-			.getLogger(JogdialConnector.class.getSimpleName());
+	private JogDialServerRpc serverRpc = RpcProxy.create(
+			JogDialServerRpc.class, this);
 
 	@Override
 	protected void init() {
 		super.init();
 
+		registerRpc(JogDialClientRpc.class, clientRpc);
 		getLayoutManager().registerDependency(this, getWidget().getElement());
 
 		getWidget().addTouchMoveHandler(this);
@@ -73,11 +63,16 @@ public class JogdialConnector extends AbstractComponentConnector implements
 		support.start(this);
 	}
 
-	protected void setCapTo(float x, float y) {
-		int capX = calculateXPositionFromDecimal(x);
-		int capY = calculateYPositionFromDecimal(y);
+	private Point calculateRadiusCappedPosition(float x, float y) {
+		float dX = 0 - x;
+		float dY = 0 - y;
 
-		getWidget().drawCap(new Point(capX, capY));
+		double angle = Math.atan2(dY, dX);
+
+		int newX = (int) (Math.cos(angle) * (radius * Math.abs(x)));
+		int newY = (int) (Math.sin(angle) * (radius * Math.abs(y)));
+
+		return new Point(centerPoint.getX() + newX, centerPoint.getY() + newY);
 	}
 
 	@Override
@@ -100,6 +95,7 @@ public class JogdialConnector extends AbstractComponentConnector implements
 		super.onStateChanged(stateChangeEvent);
 
 		this.position = getState().position;
+		this.radius = getState().radius;
 	}
 
 	@Override
@@ -109,148 +105,95 @@ public class JogdialConnector extends AbstractComponentConnector implements
 		int outerHeight = getLayoutManager().getOuterHeight(
 				getWidget().getElement());
 
-		getWidget().adjustSize(outerWidth, outerHeight);
+		getWidget().adjustSize(Math.max(outerWidth / 2, outerHeight / 2));
 
-		centerPoint = new Point(outerWidth / 2, outerHeight / 2);
+		centerPoint = new Point(radius, radius);
 		previousPoint = centerPoint;
 	}
 
 	@Override
+	public void onTouchStart(TouchStartEvent event) {
+		onTouchEvent(event.getTargetTouches().get(0));
+	}
+
+	@Override
 	public void onTouchMove(TouchMoveEvent event) {
-		getLogger().info(
-				getConnectorId() + " got " + event.getTouches().length()
-						+ " touches and " + event.getTargetTouches().length()
-						+ " targeted touches");
-
-		Touch touch = event.getTargetTouches().get(0);
-		int relativeX = touch.getRelativeX(getWidget().getElement());
-		int relativeY = touch.getRelativeY(getWidget().getElement());
-
-		updateCapPosition(new Point(relativeX, relativeY));
-
+		onTouchEvent(event.getTargetTouches().get(0));
 		event.getNativeEvent().preventDefault();
 	}
 
 	@Override
-	public void onMouseMove(MouseMoveEvent event) {
-		if (mouseDown) {
-			updateCapPosition(new Point(event.getX(), event.getY()));
-		}
+	public void onTouchEnd(TouchEndEvent event) {
+		setCapToCenter(true);
 	}
 
-	private void updateCapPosition(Point newPosition) {
-		int distanceToCenter = newPosition.distanceTo(centerPoint);
+	protected void onTouchEvent(Touch touch) {
+		float relativeX = (float) touch.getRelativeX(getWidget().getElement())
+				/ (float) radius;
+		float relativeY = (float) touch.getRelativeY(getWidget().getElement())
+				/ (float) radius;
 
-		if (isInAllowedRadius(distanceToCenter)) {
-			int distanceToPreviousPoint = newPosition.distanceTo(previousPoint);
+		setCapPosition(relativeX, relativeY, true);
+	}
 
-			if (isChangedSignificantly(distanceToPreviousPoint)) {
-				previousPoint = newPosition;
-				float xToCenter = calculateXFromCenter(newPosition.getX());
-				float yToCenter = calculateYFromCenter(newPosition.getY());
+	@Override
+	public void onGamepadStatusChanged(GamePad gamepad) {
+		float x = 0;
+		float y = 0;
 
-				serverRPC.positionMoved(xToCenter, yToCenter);
+		switch (position) {
+		case LEFT:
+			x = (float) gamepad.getAxes().get(0) * -1f;
+			y = (float) gamepad.getAxes().get(1) * -1f;
+			break;
+		case RIGHT: {
+			x = (float) gamepad.getAxes().get(2) * -1f;
+			y = (float) gamepad.getAxes().get(3) * -1f;
+			break;
+		}
+		}
+
+		setCapPosition(x, y, true);
+	}
+
+	private void setCapPosition(float x, float y, boolean fireEvent) {
+		x = Math.abs(x) < MOVEMENT_THRESHOLD ? 0 : x;
+		y = Math.abs(y) < MOVEMENT_THRESHOLD ? 0 : y;
+
+		Point capPosition = calculateRadiusCappedPosition(x, y);
+
+		if (!isInAllowedRadius(capPosition)) {
+			capPosition = calculateRadiusCappedPosition(
+					((float) capPosition.getX() / (float) radius),
+					((float) capPosition.getY() / radius));
+		}
+
+		int distanceToPreviousPoint = capPosition.distanceTo(previousPoint);
+
+		getWidget().drawCap(capPosition);
+
+		if (isChangedSignificantly(distanceToPreviousPoint)) {
+			previousPoint = capPosition;
+
+			if (fireEvent) {
+				serverRpc.positionMoved(x, y);
 			}
-
-			getWidget().drawCap(newPosition);
-		} else {
-			setCapToCenter();
 		}
 	}
 
-	private void setCapToCenter() {
+	private void setCapToCenter(boolean fireEvent) {
 		getWidget().drawCap(centerPoint);
-		serverRPC.positionMoved(0, 0);
+
+		if (fireEvent) {
+			serverRpc.positionMoved(0, 0);
+		}
 	}
 
 	private boolean isChangedSignificantly(int distanceToPreviousPoint) {
 		return distanceToPreviousPoint > 10;
 	}
 
-	private boolean isInAllowedRadius(int distanceToCenter) {
-		return distanceToCenter < getWidget().getOffsetWidth() / 2;
-	}
-
-	private float calculateXFromCenter(int x) {
-		int halfWidth = getWidget().getOffsetWidth() / 2;
-		int xToCenter = x - halfWidth;
-
-		return (float) xToCenter / (float) halfWidth;
-	}
-
-	private int calculateXPositionFromDecimal(float x) {
-		float halfWidth = (getWidget().getOffsetWidth() / 2);
-		halfWidth *= x;
-
-		return (int) (centerPoint.getX() + halfWidth);
-	}
-
-	private int calculateYPositionFromDecimal(float y) {
-		float halfHeight = (getWidget().getOffsetHeight() / 2);
-		halfHeight *= y;
-
-		return (int) (centerPoint.getY() + halfHeight);
-	}
-
-	private float calculateYFromCenter(int y) {
-		int halfHeight = getWidget().getOffsetHeight() / 2;
-		int yToCenter = y - halfHeight;
-
-		return (float) yToCenter / (float) halfHeight;
-	}
-
-	@Override
-	public void onMouseUp(MouseUpEvent event) {
-		event.preventDefault();
-		setCapToCenter();
-
-		mouseDown = false;
-	}
-
-	@Override
-	public void onMouseDown(MouseDownEvent event) {
-		event.preventDefault();
-
-		updateCapPosition(new Point(event.getX(), event.getY()));
-
-		mouseDown = true;
-	}
-
-	@Override
-	public void onTouchStart(TouchStartEvent event) {
-		Touch touch = event.getTargetTouches().get(0);
-		int relativeX = touch.getRelativeX(getWidget().getElement());
-		int relativeY = touch.getRelativeY(getWidget().getElement());
-
-		updateCapPosition(new Point(relativeX, relativeY));
-	}
-
-	private Logger getLogger() {
-		return logger;
-	}
-
-	@Override
-	public void onTouchEnd(TouchEndEvent event) {
-		setCapToCenter();
-	}
-
-	@Override
-	public void onGamepadStatusChanged(GamePad gamepad) {
-		double x = 0;
-		double y = 0;
-
-		switch (position) {
-		case LEFT:
-			x = gamepad.getAxes().get(0);
-			y = gamepad.getAxes().get(1);
-			break;
-		case RIGHT: {
-			x = gamepad.getAxes().get(2);
-			y = gamepad.getAxes().get(3);
-			break;
-		}
-		}
-
-		setCapTo((float) x, (float) y);
+	private boolean isInAllowedRadius(Point point) {
+		return centerPoint.distanceTo(point) <= radius;
 	}
 }
