@@ -16,18 +16,21 @@ import com.google.gwt.event.dom.client.TouchMoveEvent;
 import com.google.gwt.event.dom.client.TouchMoveHandler;
 import com.google.gwt.event.dom.client.TouchStartEvent;
 import com.google.gwt.event.dom.client.TouchStartHandler;
-import com.google.gwt.user.client.ui.Widget;
 import com.vaadin.client.communication.RpcProxy;
 import com.vaadin.client.communication.StateChangeEvent;
 import com.vaadin.client.ui.AbstractComponentConnector;
 import com.vaadin.client.ui.SimpleManagedLayout;
 import com.vaadin.jogdial.JogDial;
+import com.vaadin.jogdial.client.gamepad.GamePad;
+import com.vaadin.jogdial.client.gamepad.GamePadSupport;
+import com.vaadin.jogdial.client.gamepad.GamepadObserver;
 import com.vaadin.shared.ui.Connect;
 
 @Connect(JogDial.class)
 public class JogdialConnector extends AbstractComponentConnector implements
 		SimpleManagedLayout, TouchMoveHandler, TouchStartHandler,
-		TouchEndHandler, MouseMoveHandler, MouseDownHandler, MouseUpHandler {
+		TouchEndHandler, MouseMoveHandler, MouseDownHandler, MouseUpHandler,
+		GamepadObserver {
 	private static final long serialVersionUID = -4509343276799655227L;
 
 	private JogDialServerRpc serverRPC = RpcProxy.create(
@@ -38,6 +41,18 @@ public class JogdialConnector extends AbstractComponentConnector implements
 	private Point centerPoint;
 	private Point previousPoint;
 
+	private GamePadSupport support = new GamePadSupport();
+
+	private GamePad latestGamepadStatus;
+
+	private JogDialClientRpc clientRpc = new JogDialClientRpc() {
+
+		@Override
+		public void moveCapTo(float x, float y) {
+			JogdialConnector.this.setCapTo(x, y);
+		}
+	};
+
 	private static final Logger logger = Logger
 			.getLogger(JogdialConnector.class.getSimpleName());
 
@@ -46,19 +61,25 @@ public class JogdialConnector extends AbstractComponentConnector implements
 		super.init();
 
 		getLayoutManager().registerDependency(this, getWidget().getElement());
-		// getWidget().addMouseDownHandler(this);
-		// getWidget().addMouseUpHandler(this);
-		// getWidget().addMouseMoveHandler(this);
 
 		getWidget().addTouchMoveHandler(this);
 		getWidget().addTouchStartHandler(this);
 		getWidget().addTouchEndHandler(this);
 
 		centerPoint = new Point(0, 0);
+
+		support.start(this);
+	}
+
+	protected void setCapTo(float x, float y) {
+		int capX = calculateXPositionFromDecimal(x);
+		int capY = calculateYPositionFromDecimal(y);
+
+		getWidget().drawCap(new Point(capX, capY));
 	}
 
 	@Override
-	protected Widget createWidget() {
+	protected JogDialWidget createWidget() {
 		return GWT.create(JogDialWidget.class);
 	}
 
@@ -84,7 +105,7 @@ public class JogdialConnector extends AbstractComponentConnector implements
 		int outerHeight = getLayoutManager().getOuterHeight(
 				getWidget().getElement());
 
-		getWidget().adjustAnalogSize(outerWidth, outerHeight);
+		getWidget().adjustSize(outerWidth, outerHeight);
 
 		centerPoint = new Point(outerWidth / 2, outerHeight / 2);
 		previousPoint = centerPoint;
@@ -153,6 +174,20 @@ public class JogdialConnector extends AbstractComponentConnector implements
 		return (float) xToCenter / (float) halfWidth;
 	}
 
+	private int calculateXPositionFromDecimal(float x) {
+		float halfWidth = (getWidget().getOffsetWidth() / 2);
+		halfWidth *= x;
+
+		return (int) (centerPoint.getX() + halfWidth);
+	}
+
+	private int calculateYPositionFromDecimal(float y) {
+		float halfHeight = (getWidget().getOffsetHeight() / 2);
+		halfHeight *= y;
+
+		return (int) (centerPoint.getY() + halfHeight);
+	}
+
 	private float calculateYFromCenter(int y) {
 		int halfHeight = getWidget().getOffsetHeight() / 2;
 		int yToCenter = y - halfHeight;
@@ -193,5 +228,13 @@ public class JogdialConnector extends AbstractComponentConnector implements
 	@Override
 	public void onTouchEnd(TouchEndEvent event) {
 		setCapToCenter();
+	}
+
+	@Override
+	public void onGamepadStatusChanged(GamePad gamepad) {
+		double leftX = gamepad.getAxes().get(0);
+		double leftY = gamepad.getAxes().get(1);
+
+		setCapTo((float) leftX, (float) leftY);
 	}
 }

@@ -23,9 +23,9 @@ import com.google.gwt.user.client.ui.FocusPanel;
 public class JogDialWidget extends Composite implements HasAllTouchHandlers,
 		HasClickHandlers, HasMouseMoveHandlers, HasMouseDownHandlers,
 		HasMouseUpHandlers {
-	private DrawingArea drawingArea;
 
-	private Cap cap;
+	private DrawingArea drawingArea;
+	private Circle cap;
 
 	private FocusPanel panel;
 
@@ -37,7 +37,7 @@ public class JogDialWidget extends Composite implements HasAllTouchHandlers,
 		drawingArea.setStyleName("v-analog-drawingarea");
 		panel.setWidget(drawingArea);
 
-		cap = new Cap(0, 0, 20);
+		cap = new Circle(0, 0, 20);
 		cap.setFillColor("#6600ff");
 		cap.setStrokeColor("#000066");
 		cap.setStrokeWidth(2);
@@ -45,7 +45,7 @@ public class JogDialWidget extends Composite implements HasAllTouchHandlers,
 		initWidget(panel);
 	}
 
-	private void drawAnalogsBackground() {
+	private void drawBackground() {
 		drawingArea.clear();
 
 		int centerX = (drawingArea.getWidth() / 2);
@@ -67,11 +67,11 @@ public class JogDialWidget extends Composite implements HasAllTouchHandlers,
 		cap.setY(position.getY());
 	}
 
-	public void adjustAnalogSize(int outerWidth, int outerHeight) {
+	public void adjustSize(int outerWidth, int outerHeight) {
 		drawingArea.setWidth(outerWidth);
 		drawingArea.setHeight(outerHeight);
 
-		drawAnalogsBackground();
+		drawBackground();
 	}
 
 	@Override
