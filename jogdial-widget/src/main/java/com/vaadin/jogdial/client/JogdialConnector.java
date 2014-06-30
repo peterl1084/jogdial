@@ -53,6 +53,8 @@ public class JogdialConnector extends AbstractComponentConnector implements
 		}
 	};
 
+	private Position position = Position.LEFT;
+
 	private static final Logger logger = Logger
 			.getLogger(JogdialConnector.class.getSimpleName());
 
@@ -96,6 +98,8 @@ public class JogdialConnector extends AbstractComponentConnector implements
 	@Override
 	public void onStateChanged(StateChangeEvent stateChangeEvent) {
 		super.onStateChanged(stateChangeEvent);
+
+		this.position = getState().position;
 	}
 
 	@Override
@@ -232,9 +236,21 @@ public class JogdialConnector extends AbstractComponentConnector implements
 
 	@Override
 	public void onGamepadStatusChanged(GamePad gamepad) {
-		double leftX = gamepad.getAxes().get(0);
-		double leftY = gamepad.getAxes().get(1);
+		double x = 0;
+		double y = 0;
 
-		setCapTo((float) leftX, (float) leftY);
+		switch (position) {
+		case LEFT:
+			x = gamepad.getAxes().get(0);
+			y = gamepad.getAxes().get(1);
+			break;
+		case RIGHT: {
+			x = gamepad.getAxes().get(2);
+			y = gamepad.getAxes().get(3);
+			break;
+		}
+		}
+
+		setCapTo((float) x, (float) y);
 	}
 }

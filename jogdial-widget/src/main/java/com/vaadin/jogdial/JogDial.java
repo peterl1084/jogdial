@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 
 import com.vaadin.jogdial.client.JogDialServerRpc;
 import com.vaadin.jogdial.client.JogDialState;
+import com.vaadin.jogdial.client.Position;
 import com.vaadin.ui.Component;
 import com.vaadin.util.ReflectTools;
 
@@ -20,11 +21,13 @@ public class JogDial extends com.vaadin.ui.AbstractComponent {
 		}
 	};
 
-	public JogDial() {
+	public JogDial(Position position) {
 		setWidth(250, Unit.PIXELS);
 		setHeight(250, Unit.PIXELS);
 
 		registerRpc(rpc);
+
+		getState().position = position;
 	}
 
 	@Override

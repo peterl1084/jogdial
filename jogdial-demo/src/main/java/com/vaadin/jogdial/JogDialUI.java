@@ -5,6 +5,7 @@ import javax.servlet.annotation.WebServlet;
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.jogdial.JogDial.AxisMoveEvent;
 import com.vaadin.jogdial.JogDial.AxisMoveListener;
+import com.vaadin.jogdial.client.Position;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.ui.Alignment;
@@ -24,7 +25,7 @@ public class JogDialUI extends UI {
 		HorizontalLayout layout = new HorizontalLayout();
 		layout.setSizeFull();
 
-		JogDial rotationalAnalog = new JogDial();
+		JogDial rotationalAnalog = new JogDial(Position.LEFT);
 		rotationalAnalog.addAxisMoveListener(new AxisMoveListener() {
 
 			@Override
@@ -34,7 +35,7 @@ public class JogDialUI extends UI {
 			}
 		});
 
-		JogDial movementAnalog = new JogDial();
+		JogDial movementAnalog = new JogDial(Position.RIGHT);
 		movementAnalog.addAxisMoveListener(new AxisMoveListener() {
 
 			@Override
