@@ -59,7 +59,7 @@ public class GamePadSupport  {
 	private class GamePadUpdateCallback implements AnimationCallback {
 		@Override
 		public void execute(double timestamp) {
-			pollGamePads();			
+			pollGamePads();
 		}
 	}
 }

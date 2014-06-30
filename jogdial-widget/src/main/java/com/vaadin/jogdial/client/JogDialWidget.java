@@ -31,10 +31,10 @@ public class JogDialWidget extends Composite implements HasAllTouchHandlers,
 
 	public JogDialWidget() {
 		panel = new FocusPanel();
-		panel.setStyleName("v-analog-panel");
+		panel.setStyleName("v-jogdial");
 
 		drawingArea = new DrawingArea(0, 0);
-		drawingArea.setStyleName("v-analog-drawingarea");
+		drawingArea.setStyleName("v-jogdial-drawingarea");
 		panel.setWidget(drawingArea);
 
 		cap = new Circle(0, 0, 20);
@@ -45,7 +45,7 @@ public class JogDialWidget extends Composite implements HasAllTouchHandlers,
 		initWidget(panel);
 	}
 
-	private void drawBackground(int radius) {
+	void drawBackground(int radius) {
 		drawingArea.clear();
 
 		Circle circle = new Circle(radius, radius, radius - 2);
@@ -62,11 +62,26 @@ public class JogDialWidget extends Composite implements HasAllTouchHandlers,
 		cap.setY(position.getY());
 	}
 
-	public void adjustSize(int radius) {
-		drawingArea.setWidth(radius * 2);
-		drawingArea.setHeight(radius * 2);
+	@Override
+	public void setWidth(String width) {
+		super.setWidth(width);
 
-		drawBackground(radius);
+		if (width.endsWith("px")) {
+			int parsedWidth = (int) Double.parseDouble(width.substring(0,
+					width.length() - 2));
+			drawingArea.setWidth(parsedWidth);
+		}
+	}
+
+	@Override
+	public void setHeight(String height) {
+		super.setHeight(height);
+
+		if (height.endsWith("px")) {
+			int parsedHeight = (int) Double.parseDouble(height.substring(0,
+					height.length() - 2));
+			drawingArea.setHeight(parsedHeight);
+		}
 	}
 
 	@Override

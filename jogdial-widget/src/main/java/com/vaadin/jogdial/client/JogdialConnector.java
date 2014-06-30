@@ -11,7 +11,6 @@ import com.google.gwt.event.dom.client.TouchStartHandler;
 import com.vaadin.client.communication.RpcProxy;
 import com.vaadin.client.communication.StateChangeEvent;
 import com.vaadin.client.ui.AbstractComponentConnector;
-import com.vaadin.client.ui.SimpleManagedLayout;
 import com.vaadin.jogdial.JogDial;
 import com.vaadin.jogdial.client.gamepad.GamePad;
 import com.vaadin.jogdial.client.gamepad.GamePadSupport;
@@ -20,8 +19,7 @@ import com.vaadin.shared.ui.Connect;
 
 @Connect(JogDial.class)
 public class JogdialConnector extends AbstractComponentConnector implements
-		SimpleManagedLayout, TouchMoveHandler, TouchStartHandler,
-		TouchEndHandler, GamepadObserver {
+		TouchMoveHandler, TouchStartHandler, TouchEndHandler, GamepadObserver {
 	private static final long serialVersionUID = -4509343276799655227L;
 
 	private static final float MOVEMENT_THRESHOLD = 0.05f;
@@ -52,13 +50,13 @@ public class JogdialConnector extends AbstractComponentConnector implements
 		super.init();
 
 		registerRpc(JogDialClientRpc.class, clientRpc);
-		getLayoutManager().registerDependency(this, getWidget().getElement());
 
 		getWidget().addTouchMoveHandler(this);
 		getWidget().addTouchStartHandler(this);
 		getWidget().addTouchEndHandler(this);
 
 		centerPoint = new Point(0, 0);
+		previousPoint = centerPoint;
 
 		support.start(this);
 	}
@@ -95,20 +93,12 @@ public class JogdialConnector extends AbstractComponentConnector implements
 		super.onStateChanged(stateChangeEvent);
 
 		this.position = getState().position;
+
 		this.radius = getState().radius;
-	}
+		this.centerPoint = new Point(radius, radius);
 
-	@Override
-	public void layout() {
-		int outerWidth = getLayoutManager().getOuterWidth(
-				getWidget().getElement());
-		int outerHeight = getLayoutManager().getOuterHeight(
-				getWidget().getElement());
-
-		getWidget().adjustSize(Math.max(outerWidth / 2, outerHeight / 2));
-
-		centerPoint = new Point(radius, radius);
-		previousPoint = centerPoint;
+		getWidget().drawBackground(radius);
+		getWidget().drawCap(centerPoint);
 	}
 
 	@Override

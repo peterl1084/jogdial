@@ -2,6 +2,7 @@ package com.vaadin.jogdial;
 
 import javax.servlet.annotation.WebServlet;
 
+import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.event.ShortcutAction.KeyCode;
 import com.vaadin.jogdial.JogDial.AxesMoveEvent;
@@ -14,6 +15,7 @@ import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.UI;
 
 @SuppressWarnings("serial")
+@Theme("jogdial")
 public class JogDialUI extends UI {
 
 	@WebServlet(value = "/*", asyncSupported = true)
@@ -26,7 +28,7 @@ public class JogDialUI extends UI {
 		HorizontalLayout layout = new HorizontalLayout();
 		layout.setSizeFull();
 
-		JogDial rotationDial = new JogDial(Position.LEFT, 200);
+		JogDial rotationDial = new JogDial(Position.LEFT, 100);
 		rotationDial.addAxesMoveListener(new AxesMoveListener() {
 
 			@Override
@@ -36,7 +38,7 @@ public class JogDialUI extends UI {
 			}
 		});
 
-		JogDial movementDial = new JogDial(Position.RIGHT, 300);
+		JogDial movementDial = new JogDial(Position.RIGHT, 120);
 		movementDial.addAxesMoveListener(new AxesMoveListener() {
 
 			@Override

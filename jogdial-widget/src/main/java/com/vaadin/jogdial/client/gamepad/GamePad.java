@@ -9,7 +9,7 @@ public class GamePad extends JavaScriptObject {
 
 	}
 
-	public final native float[] getButtons() /*-{ return this.buttons; }-*/;
+	public final native JsArrayNumber getButtons() /*-{ return this.buttons; }-*/;
 
 	public final native JsArrayNumber getAxes() /*-{ return this.axes; }-*/;
 
