@@ -2,7 +2,6 @@ package com.vaadin.jogdial;
 
 import javax.servlet.annotation.WebServlet;
 
-import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.event.ShortcutAction.KeyCode;
 import com.vaadin.jogdial.JogDial.AxesMoveEvent;
@@ -14,9 +13,8 @@ import com.vaadin.ui.Alignment;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.UI;
 
-@SuppressWarnings("serial")
-@Theme("jogdial")
 public class JogDialUI extends UI {
+	private static final long serialVersionUID = -3965216699601778485L;
 
 	@WebServlet(value = "/*", asyncSupported = true)
 	@VaadinServletConfiguration(productionMode = false, ui = JogDialUI.class, widgetset = "com.vaadin.jogdial.JogDialDemoWidgetset")
