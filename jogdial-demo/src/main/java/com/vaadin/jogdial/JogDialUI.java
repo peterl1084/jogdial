@@ -14,50 +14,50 @@ import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.UI;
 
 public class JogDialUI extends UI {
-	private static final long serialVersionUID = -3965216699601778485L;
+    private static final long serialVersionUID = -3965216699601778485L;
 
-	@WebServlet(value = "/*", asyncSupported = true)
-	@VaadinServletConfiguration(productionMode = false, ui = JogDialUI.class, widgetset = "com.vaadin.jogdial.JogDialDemoWidgetset")
-	public static class Servlet extends VaadinServlet {
-	}
+    @WebServlet(value = "/*", asyncSupported = true)
+    @VaadinServletConfiguration(productionMode = false, ui = JogDialUI.class, widgetset = "com.vaadin.jogdial.JogDialDemoWidgetset")
+    public static class Servlet extends VaadinServlet {
+    }
 
-	@Override
-	protected void init(VaadinRequest request) {
-		HorizontalLayout layout = new HorizontalLayout();
-		layout.setSizeFull();
+    @Override
+    protected void init(VaadinRequest request) {
+        HorizontalLayout layout = new HorizontalLayout();
+        layout.setSizeFull();
 
-		JogDial rotationDial = new JogDial(Position.LEFT, 100);
-		rotationDial.addAxesMoveListener(new AxesMoveListener() {
+        JogDial rotationDial = new JogDial(Position.LEFT, 100);
+        rotationDial.addAxesMoveListener(new AxesMoveListener() {
 
-			@Override
-			public void onAxesMoved(AxesMoveEvent event) {
-				System.out.println("Rotational " + event.getX() + ","
-						+ event.getY());
-			}
-		});
+            @Override
+            public void onAxesMoved(AxesMoveEvent event) {
+                System.out.println("Rotational " + event.getX() + ","
+                        + event.getY());
+            }
+        });
 
-		JogDial movementDial = new JogDial(Position.RIGHT, 120);
-		movementDial.addAxesMoveListener(new AxesMoveListener() {
+        JogDial movementDial = new JogDial(Position.RIGHT, 120);
+        movementDial.addAxesMoveListener(new AxesMoveListener() {
 
-			@Override
-			public void onAxesMoved(AxesMoveEvent event) {
-				System.out.println("Movement " + event.getX() + ","
-						+ event.getY());
-			}
-		});
+            @Override
+            public void onAxesMoved(AxesMoveEvent event) {
+                System.out.println("Movement " + event.getX() + ","
+                        + event.getY());
+            }
+        });
 
-		movementDial.addUpShortcutKey(KeyCode.ARROW_UP);
-		movementDial.addDownShortcutKey(KeyCode.ARROW_DOWN);
-		movementDial.addLeftShortcutKey(KeyCode.ARROW_LEFT);
-		movementDial.addRightShortcutKey(KeyCode.ARROW_RIGHT);
+        movementDial.addUpShortcutKey(KeyCode.ARROW_UP);
+        movementDial.addDownShortcutKey(KeyCode.ARROW_DOWN);
+        movementDial.addLeftShortcutKey(KeyCode.ARROW_LEFT);
+        movementDial.addRightShortcutKey(KeyCode.ARROW_RIGHT);
 
-		layout.addComponent(rotationDial);
-		layout.addComponent(movementDial);
+        layout.addComponent(rotationDial);
+        layout.addComponent(movementDial);
 
-		layout.setExpandRatio(movementDial, 1);
-		layout.setComponentAlignment(rotationDial, Alignment.BOTTOM_LEFT);
-		layout.setComponentAlignment(movementDial, Alignment.BOTTOM_RIGHT);
+        layout.setExpandRatio(movementDial, 1);
+        layout.setComponentAlignment(rotationDial, Alignment.BOTTOM_LEFT);
+        layout.setComponentAlignment(movementDial, Alignment.BOTTOM_RIGHT);
 
-		setContent(layout);
-	}
+        setContent(layout);
+    }
 }
